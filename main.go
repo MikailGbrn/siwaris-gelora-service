@@ -8,6 +8,7 @@ import (
 
 	"siwaris-gelora-service/db"
 	"siwaris-gelora-service/handlers/adminhandlers"
+	"siwaris-gelora-service/handlers/citizenhandlers"
 )
 
 // CORSMiddleware handles Cross-Origin Resource Sharing (CORS) header injection
@@ -45,8 +46,16 @@ func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /api/health", HealthHandler)
 	
+	// Citizen Routes
+	mux.HandleFunc("POST /api/apply", citizenhandlers.ApplyHandler)
+	mux.HandleFunc("GET /api/track", citizenhandlers.TrackHandler)
+	
 	// Admin Login Route
 	mux.HandleFunc("POST /api/admin/login", adminhandlers.AdminLoginHandler)
+
+	// Serve Uploaded Files
+	fileHandler := http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads")))
+	mux.Handle("/uploads/", fileHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
