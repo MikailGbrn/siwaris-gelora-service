@@ -1,0 +1,17 @@
+# Binaries
+server
+server.exe
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Databases
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# User uploads
+uploads/
