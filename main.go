@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"siwaris-gelora-service/auth"
 	"siwaris-gelora-service/db"
 	"siwaris-gelora-service/handlers/adminhandlers"
 	"siwaris-gelora-service/handlers/citizenhandlers"
@@ -52,6 +53,12 @@ func main() {
 	
 	// Admin Login Route
 	mux.HandleFunc("POST /api/admin/login", adminhandlers.AdminLoginHandler)
+
+	// Admin Protected Routes
+	mux.HandleFunc("GET /api/admin/applications", auth.AuthMiddleware(adminhandlers.AdminListApplicationsHandler))
+	mux.HandleFunc("GET /api/admin/applications/{id}", auth.AuthMiddleware(adminhandlers.AdminGetApplicationHandler))
+	mux.HandleFunc("PUT /api/admin/applications/{id}", auth.AuthMiddleware(adminhandlers.AdminUpdateStatusHandler))
+	mux.HandleFunc("GET /api/admin/applications/{id}/pdf", auth.AuthMiddleware(adminhandlers.AdminDownloadPDFHandler))
 
 	// Serve Uploaded Files
 	fileHandler := http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads")))
