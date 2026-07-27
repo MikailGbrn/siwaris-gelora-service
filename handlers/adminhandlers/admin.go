@@ -26,8 +26,11 @@ func AdminListApplicationsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := db.DB.Query(`SELECT id, registration_number, status, applicant_name, applicant_nik, applicant_kk, 
-		applicant_address, applicant_phone, applicant_email, heir_name, death_date, 
-		relationship, file_ktp, file_kk, file_death_cert, file_rt_rw, file_other, 
+		applicant_address, applicant_phone, applicant_email, heir_name, death_date, relationship, 
+		file_permohonan, file_pengantar_rt_rw, file_pernyataan_kebenaran, file_sptjm, 
+		file_ktp_pewaris, file_ktp_ahli_waris, file_kk_ahli_waris, file_akta_lahir_ahli_waris, 
+		file_surat_nikah_pewaris, file_akta_kematian_pewaris, file_akta_cerai_pewaris, 
+		file_kematian_ahli_waris, file_ktp_saksi, file_pernyataan_lainnya, 
 		admin_notes, estimated_completion, created_at, updated_at FROM applications ORDER BY created_at DESC`)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -40,8 +43,11 @@ func AdminListApplicationsHandler(w http.ResponseWriter, r *http.Request) {
 		var app db.Application
 		err := rows.Scan(
 			&app.ID, &app.RegistrationNumber, &app.Status, &app.ApplicantName, &app.ApplicantNik, &app.ApplicantKk,
-			&app.ApplicantAddress, &app.ApplicantPhone, &app.ApplicantEmail, &app.HeirName, &app.DeathDate,
-			&app.Relationship, &app.FileKtp, &app.FileKk, &app.FileDeathCert, &app.FileRtRw, &app.FileOther,
+			&app.ApplicantAddress, &app.ApplicantPhone, &app.ApplicantEmail, &app.HeirName, &app.DeathDate, &app.Relationship,
+			&app.FilePermohonan, &app.FilePengantarRtRw, &app.FilePernyataanKebenaran, &app.FileSptjm,
+			&app.FileKtpPewaris, &app.FileKtpAhliWaris, &app.FileKkAhliWaris, &app.FileAktaLahirAhliWaris,
+			&app.FileSuratNikahPewaris, &app.FileAktaKematianPewaris, &app.FileAktaCeraiPewaris,
+			&app.FileKematianAhliWaris, &app.FileKtpSaksi, &app.FilePernyataanLainnya,
 			&app.AdminNotes, &app.EstimatedCompletion, &app.CreatedAt, &app.UpdatedAt,
 		)
 		if err != nil {
@@ -71,15 +77,21 @@ func AdminGetApplicationHandler(w http.ResponseWriter, r *http.Request) {
 
 	var app db.Application
 	query := `SELECT id, registration_number, status, applicant_name, applicant_nik, applicant_kk, 
-	          applicant_address, applicant_phone, applicant_email, heir_name, death_date, 
-	          relationship, file_ktp, file_kk, file_death_cert, file_rt_rw, file_other, 
+	          applicant_address, applicant_phone, applicant_email, heir_name, death_date, relationship, 
+	          file_permohonan, file_pengantar_rt_rw, file_pernyataan_kebenaran, file_sptjm, 
+	          file_ktp_pewaris, file_ktp_ahli_waris, file_kk_ahli_waris, file_akta_lahir_ahli_waris, 
+	          file_surat_nikah_pewaris, file_akta_kematian_pewaris, file_akta_cerai_pewaris, 
+	          file_kematian_ahli_waris, file_ktp_saksi, file_pernyataan_lainnya, 
 	          admin_notes, estimated_completion, created_at, updated_at 
 	          FROM applications WHERE id = ?`
 
 	err = db.DB.QueryRow(query, id).Scan(
 		&app.ID, &app.RegistrationNumber, &app.Status, &app.ApplicantName, &app.ApplicantNik, &app.ApplicantKk,
-		&app.ApplicantAddress, &app.ApplicantPhone, &app.ApplicantEmail, &app.HeirName, &app.DeathDate,
-		&app.Relationship, &app.FileKtp, &app.FileKk, &app.FileDeathCert, &app.FileRtRw, &app.FileOther,
+		&app.ApplicantAddress, &app.ApplicantPhone, &app.ApplicantEmail, &app.HeirName, &app.DeathDate, &app.Relationship,
+		&app.FilePermohonan, &app.FilePengantarRtRw, &app.FilePernyataanKebenaran, &app.FileSptjm,
+		&app.FileKtpPewaris, &app.FileKtpAhliWaris, &app.FileKkAhliWaris, &app.FileAktaLahirAhliWaris,
+		&app.FileSuratNikahPewaris, &app.FileAktaKematianPewaris, &app.FileAktaCeraiPewaris,
+		&app.FileKematianAhliWaris, &app.FileKtpSaksi, &app.FilePernyataanLainnya,
 		&app.AdminNotes, &app.EstimatedCompletion, &app.CreatedAt, &app.UpdatedAt,
 	)
 
