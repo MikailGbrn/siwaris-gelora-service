@@ -49,6 +49,7 @@ func main() {
 	
 	// Citizen Routes
 	mux.HandleFunc("POST /api/apply", citizenhandlers.ApplyHandler)
+	mux.HandleFunc("POST /api/apply/revision", citizenhandlers.RevisionHandler)
 	mux.HandleFunc("GET /api/track", citizenhandlers.TrackHandler)
 	
 	// Admin Login Route
