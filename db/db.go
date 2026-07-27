@@ -37,6 +37,7 @@ type Application struct {
 	FileKtpSuami                          string    `json:"file_ktp_suami"`
 	FileKtpIstri                          string    `json:"file_ktp_istri"`
 	FileAktaCeraiPewaris                  string    `json:"file_akta_cerai_pewaris"`
+	RejectedFiles                         string    `json:"rejected_files"` // JSON array string of rejected keys e.g. ["file_ktp_ahli_waris"]
 	AdminNotes                            string    `json:"admin_notes"`
 	EstimatedCompletion                   string    `json:"estimated_completion"`
 	CreatedAt                             time.Time `json:"created_at"`
@@ -92,6 +93,7 @@ func createTable() {
 		file_ktp_suami TEXT,
 		file_ktp_istri TEXT,
 		file_akta_cerai_pewaris TEXT,
+		rejected_files TEXT NOT NULL DEFAULT '',
 		admin_notes TEXT,
 		estimated_completion TEXT,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

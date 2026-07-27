@@ -67,7 +67,6 @@ func GenerateApplicationPDF(w io.Writer, app *db.Application) error {
 	pdf.CellFormat(0, 6, "III. STATUS PERMOHONAN", "", 1, "L", false, 0, "")
 	pdf.SetFont("Arial", "", 10)
 	writeField(pdf, "Status Saat Ini", app.Status)
-	writeField(pdf, "Estimasi Selesai", app.EstimatedCompletion)
 	if app.AdminNotes != "" {
 		writeField(pdf, "Catatan Petugas", app.AdminNotes)
 	}
@@ -130,7 +129,7 @@ func AdminDownloadPDFHandler(w http.ResponseWriter, r *http.Request) {
 	          file_permohonan, file_pengantar_rt_rw, file_pernyataan_kebenaran, file_sptjm, 
 	          file_ktp_pewaris, file_ktp_ahli_waris, file_kk_ahli_waris, file_akta_lahir_ahli_waris, file_ktp_saksi, 
 	          file_kematian_ahli_waris_wafat_lebih_dulu, file_pendukung_lainnya, file_surat_nikah_pewaris, 
-	          file_ktp_suami, file_ktp_istri, file_akta_cerai_pewaris, 
+	          file_ktp_suami, file_ktp_istri, file_akta_cerai_pewaris, rejected_files, 
 	          admin_notes, estimated_completion, created_at, updated_at 
 	          FROM applications WHERE id = ?`
 
@@ -140,7 +139,7 @@ func AdminDownloadPDFHandler(w http.ResponseWriter, r *http.Request) {
 		&app.FilePermohonan, &app.FilePengantarRtRw, &app.FilePernyataanKebenaran, &app.FileSptjm,
 		&app.FileKtpPewaris, &app.FileKtpAhliWaris, &app.FileKkAhliWaris, &app.FileAktaLahirAhliWaris, &app.FileKtpSaksi,
 		&app.FileKematianAhliWarisWafatLebihDulu, &app.FilePendukungLainnya, &app.FileSuratNikahPewaris,
-		&app.FileKtpSuami, &app.FileKtpIstri, &app.FileAktaCeraiPewaris,
+		&app.FileKtpSuami, &app.FileKtpIstri, &app.FileAktaCeraiPewaris, &app.RejectedFiles,
 		&app.AdminNotes, &app.EstimatedCompletion, &app.CreatedAt, &app.UpdatedAt,
 	)
 
