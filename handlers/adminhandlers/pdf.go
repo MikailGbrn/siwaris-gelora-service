@@ -57,6 +57,9 @@ func GenerateApplicationPDF(w io.Writer, app *db.Application) error {
 	writeField(pdf, "Nama Pewaris (Almarhum/ah)", app.HeirName)
 	writeField(pdf, "Tanggal Meninggal", app.DeathDate)
 	writeField(pdf, "Hubungan Keluarga", app.Relationship)
+	if app.Relationship == "Orang Tua" || app.Relationship == "Istri / Suami" {
+		writeField(pdf, "Status Cerai Pewaris", app.IsDivorced)
+	}
 	pdf.Ln(5)
 
 	// Section 3: Status Administrasi
@@ -123,21 +126,21 @@ func AdminDownloadPDFHandler(w http.ResponseWriter, r *http.Request) {
 
 	var app db.Application
 	query := `SELECT id, registration_number, status, applicant_name, applicant_nik, applicant_kk, 
-	          applicant_address, applicant_phone, applicant_email, heir_name, death_date, relationship, 
+	          applicant_address, applicant_phone, applicant_email, heir_name, death_date, relationship, is_divorced, 
 	          file_permohonan, file_pengantar_rt_rw, file_pernyataan_kebenaran, file_sptjm, 
-	          file_ktp_pewaris, file_ktp_ahli_waris, file_kk_ahli_waris, file_akta_lahir_ahli_waris, 
-	          file_surat_nikah_pewaris, file_akta_kematian_pewaris, file_akta_cerai_pewaris, 
-	          file_kematian_ahli_waris, file_ktp_saksi, file_pernyataan_lainnya, 
+	          file_ktp_pewaris, file_ktp_ahli_waris, file_kk_ahli_waris, file_akta_lahir_ahli_waris, file_ktp_saksi, 
+	          file_kematian_ahli_waris_wafat_lebih_dulu, file_pendukung_lainnya, file_surat_nikah_pewaris, 
+	          file_ktp_suami, file_ktp_istri, file_akta_cerai_pewaris, 
 	          admin_notes, estimated_completion, created_at, updated_at 
 	          FROM applications WHERE id = ?`
 
 	err = db.DB.QueryRow(query, id).Scan(
 		&app.ID, &app.RegistrationNumber, &app.Status, &app.ApplicantName, &app.ApplicantNik, &app.ApplicantKk,
-		&app.ApplicantAddress, &app.ApplicantPhone, &app.ApplicantEmail, &app.HeirName, &app.DeathDate, &app.Relationship,
+		&app.ApplicantAddress, &app.ApplicantPhone, &app.ApplicantEmail, &app.HeirName, &app.DeathDate, &app.Relationship, &app.IsDivorced,
 		&app.FilePermohonan, &app.FilePengantarRtRw, &app.FilePernyataanKebenaran, &app.FileSptjm,
-		&app.FileKtpPewaris, &app.FileKtpAhliWaris, &app.FileKkAhliWaris, &app.FileAktaLahirAhliWaris,
-		&app.FileSuratNikahPewaris, &app.FileAktaKematianPewaris, &app.FileAktaCeraiPewaris,
-		&app.FileKematianAhliWaris, &app.FileKtpSaksi, &app.FilePernyataanLainnya,
+		&app.FileKtpPewaris, &app.FileKtpAhliWaris, &app.FileKkAhliWaris, &app.FileAktaLahirAhliWaris, &app.FileKtpSaksi,
+		&app.FileKematianAhliWarisWafatLebihDulu, &app.FilePendukungLainnya, &app.FileSuratNikahPewaris,
+		&app.FileKtpSuami, &app.FileKtpIstri, &app.FileAktaCeraiPewaris,
 		&app.AdminNotes, &app.EstimatedCompletion, &app.CreatedAt, &app.UpdatedAt,
 	)
 
