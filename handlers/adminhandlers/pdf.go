@@ -67,7 +67,6 @@ func GenerateApplicationPDF(w io.Writer, app *db.Application) error {
 	pdf.CellFormat(0, 6, "III. STATUS PERMOHONAN", "", 1, "L", false, 0, "")
 	pdf.SetFont("Arial", "", 10)
 	writeField(pdf, "Status Saat Ini", app.Status)
-	writeField(pdf, "Estimasi Selesai", app.EstimatedCompletion)
 	if app.AdminNotes != "" {
 		writeField(pdf, "Catatan Petugas", app.AdminNotes)
 	}
