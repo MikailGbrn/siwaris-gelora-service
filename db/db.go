@@ -9,27 +9,36 @@ import (
 )
 
 type Application struct {
-	ID                  int64     `json:"id"`
-	RegistrationNumber  string    `json:"registration_number"`
-	Status              string    `json:"status"` // Menunggu Verifikasi, Perlu Perbaikan, Sedang Diproses, Menunggu TTD, Selesai
-	ApplicantName       string    `json:"applicant_name"`
-	ApplicantNik        string    `json:"applicant_nik"`
-	ApplicantKk         string    `json:"applicant_kk"`
-	ApplicantAddress    string    `json:"applicant_address"`
-	ApplicantPhone      string    `json:"applicant_phone"`
-	ApplicantEmail      string    `json:"applicant_email"`
-	HeirName            string    `json:"heir_name"`
-	DeathDate           string    `json:"death_date"`
-	Relationship        string    `json:"relationship"`
-	FileKtp             string    `json:"file_ktp"`
-	FileKk              string    `json:"file_kk"`
-	FileDeathCert       string    `json:"file_death_cert"`
-	FileRtRw            string    `json:"file_rt_rw"`
-	FileOther           string    `json:"file_other"`
-	AdminNotes          string    `json:"admin_notes"`
-	EstimatedCompletion string    `json:"estimated_completion"`
-	CreatedAt           time.Time `json:"created_at"`
-	UpdatedAt           time.Time `json:"updated_at"`
+	ID                        int64     `json:"id"`
+	RegistrationNumber        string    `json:"registration_number"`
+	Status                    string    `json:"status"` // Menunggu Verifikasi, Perlu Perbaikan, Sedang Diproses, Menunggu TTD, Selesai
+	ApplicantName             string    `json:"applicant_name"`
+	ApplicantNik              string    `json:"applicant_nik"`
+	ApplicantKk               string    `json:"applicant_kk"`
+	ApplicantAddress          string    `json:"applicant_address"`
+	ApplicantPhone            string    `json:"applicant_phone"`
+	ApplicantEmail            string    `json:"applicant_email"`
+	HeirName                  string    `json:"heir_name"`
+	DeathDate                 string    `json:"death_date"`
+	Relationship              string    `json:"relationship"`
+	FilePermohonan            string    `json:"file_permohonan"`
+	FilePengantarRtRw         string    `json:"file_pengantar_rt_rw"`
+	FilePernyataanKebenaran   string    `json:"file_pernyataan_kebenaran"`
+	FileSptjm                 string    `json:"file_sptjm"`
+	FileKtpPewaris            string    `json:"file_ktp_pewaris"`
+	FileKtpAhliWaris          string    `json:"file_ktp_ahli_waris"`
+	FileKkAhliWaris           string    `json:"file_kk_ahli_waris"`
+	FileAktaLahirAhliWaris    string    `json:"file_akta_lahir_ahli_waris"`
+	FileSuratNikahPewaris     string    `json:"file_surat_nikah_pewaris"`
+	FileAktaKematianPewaris   string    `json:"file_akta_kematian_pewaris"`
+	FileAktaCeraiPewaris      string    `json:"file_akta_cerai_pewaris"`
+	FileKematianAhliWaris     string    `json:"file_kematian_ahli_waris"`
+	FileKtpSaksi              string    `json:"file_ktp_saksi"`
+	FilePernyataanLainnya     string    `json:"file_pernyataan_lainnya"`
+	AdminNotes                string    `json:"admin_notes"`
+	EstimatedCompletion       string    `json:"estimated_completion"`
+	CreatedAt                 time.Time `json:"created_at"`
+	UpdatedAt                 time.Time `json:"updated_at"`
 }
 
 // DB is the global database connection handle exported for other packages
@@ -65,11 +74,20 @@ func createTable() {
 		heir_name TEXT NOT NULL,
 		death_date TEXT NOT NULL,
 		relationship TEXT NOT NULL,
-		file_ktp TEXT NOT NULL,
-		file_kk TEXT NOT NULL,
-		file_death_cert TEXT NOT NULL,
-		file_rt_rw TEXT NOT NULL,
-		file_other TEXT,
+		file_permohonan TEXT NOT NULL,
+		file_pengantar_rt_rw TEXT NOT NULL,
+		file_pernyataan_kebenaran TEXT NOT NULL,
+		file_sptjm TEXT NOT NULL,
+		file_ktp_pewaris TEXT NOT NULL,
+		file_ktp_ahli_waris TEXT NOT NULL,
+		file_kk_ahli_waris TEXT NOT NULL,
+		file_akta_lahir_ahli_waris TEXT NOT NULL,
+		file_surat_nikah_pewaris TEXT NOT NULL,
+		file_akta_kematian_pewaris TEXT NOT NULL,
+		file_akta_cerai_pewaris TEXT NOT NULL,
+		file_kematian_ahli_waris TEXT NOT NULL,
+		file_ktp_saksi TEXT NOT NULL,
+		file_pernyataan_lainnya TEXT NOT NULL,
 		admin_notes TEXT,
 		estimated_completion TEXT,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,

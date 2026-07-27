@@ -34,8 +34,8 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Limit upload size (5MB per file, max 30MB total)
-	err := r.ParseMultipartForm(30 << 20)
+	// Limit upload size (5MB per file, max 75MB total for 14 files)
+	err := r.ParseMultipartForm(75 << 20)
 	if err != nil {
 		http.Error(w, "Ukuran file terlalu besar", http.StatusBadRequest)
 		return
@@ -60,17 +60,18 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 	EnsureUploadDirExists()
 
 	// Save files
-	fileKeys := []string{"file_ktp", "file_kk", "file_death_cert", "file_rt_rw", "file_other"}
+	fileKeys := []string{
+		"file_permohonan", "file_pengantar_rt_rw", "file_pernyataan_kebenaran", "file_sptjm",
+		"file_ktp_pewaris", "file_ktp_ahli_waris", "file_kk_ahli_waris", "file_akta_lahir_ahli_waris",
+		"file_surat_nikah_pewaris", "file_akta_kematian_pewaris", "file_akta_cerai_pewaris",
+		"file_kematian_ahli_waris", "file_ktp_saksi", "file_pernyataan_lainnya",
+	}
 	filePaths := make(map[string]string)
 
 	for _, key := range fileKeys {
 		file, handler, err := r.FormFile(key)
 		if err != nil {
-			if key == "file_other" {
-				filePaths[key] = ""
-				continue
-			}
-			http.Error(w, fmt.Sprintf("File %s wajib diunggah", key), http.StatusBadRequest)
+			http.Error(w, fmt.Sprintf("Berkas '%s' wajib diunggah", key), http.StatusBadRequest)
 			return
 		}
 		defer file.Close()
@@ -80,14 +81,14 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 		destPath := filepath.Join(UploadDir, filename)
 		out, err := os.Create(destPath)
 		if err != nil {
-			http.Error(w, "Gagal menyimpan berkas", http.StatusInternalServerError)
+			http.Error(w, "Gagal menyimpan berkas di server", http.StatusInternalServerError)
 			return
 		}
 		defer out.Close()
 
 		_, err = io.Copy(out, file)
 		if err != nil {
-			http.Error(w, "Gagal menulis berkas", http.StatusInternalServerError)
+			http.Error(w, "Gagal menulis berkas ke penyimpanan", http.StatusInternalServerError)
 			return
 		}
 		filePaths[key] = "/uploads/" + filename
@@ -105,13 +106,19 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 		INSERT INTO applications (
 			registration_number, status, applicant_name, applicant_nik, applicant_kk, 
 			applicant_address, applicant_phone, applicant_email, heir_name, death_date, 
-			relationship, file_ktp, file_kk, file_death_cert, file_rt_rw, file_other, 
+			relationship, file_permohonan, file_pengantar_rt_rw, file_pernyataan_kebenaran,
+			file_sptjm, file_ktp_pewaris, file_ktp_ahli_waris, file_kk_ahli_waris,
+			file_akta_lahir_ahli_waris, file_surat_nikah_pewaris, file_akta_kematian_pewaris,
+			file_akta_cerai_pewaris, file_kematian_ahli_waris, file_ktp_saksi, file_pernyataan_lainnya,
 			admin_notes, estimated_completion, created_at, updated_at
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`, "TEMP", "Menunggu Verifikasi", applicantName, applicantNik, applicantKk,
-		applicantAddress, applicantPhone, applicantEmail, heirName, deathDate,
-		relationship, filePaths["file_ktp"], filePaths["file_kk"], filePaths["file_death_cert"],
-		filePaths["file_rt_rw"], filePaths["file_other"], "", "", time.Now(), time.Now())
+		applicantAddress, applicantPhone, applicantEmail, heirName, deathDate, relationship,
+		filePaths["file_permohonan"], filePaths["file_pengantar_rt_rw"], filePaths["file_pernyataan_kebenaran"],
+		filePaths["file_sptjm"], filePaths["file_ktp_pewaris"], filePaths["file_ktp_ahli_waris"], filePaths["file_kk_ahli_waris"],
+		filePaths["file_akta_lahir_ahli_waris"], filePaths["file_surat_nikah_pewaris"], filePaths["file_akta_kematian_pewaris"],
+		filePaths["file_akta_cerai_pewaris"], filePaths["file_kematian_ahli_waris"], filePaths["file_ktp_saksi"], filePaths["file_pernyataan_lainnya"],
+		"", "", time.Now(), time.Now())
 
 	if err != nil {
 		tx.Rollback()
