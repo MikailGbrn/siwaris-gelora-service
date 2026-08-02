@@ -95,8 +95,8 @@ func RevisionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Send mock notification email for resubmission review
-	go email.SendSubmissionEmail(app.ApplicantEmail, app.ApplicantName, app.RegistrationNumber)
+	// Send revision received notification email for resubmission review
+	go email.SendRevisionReceivedEmail(app.ApplicantEmail, app.ApplicantName, app.RegistrationNumber)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
