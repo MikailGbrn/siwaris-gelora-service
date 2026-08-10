@@ -26,13 +26,13 @@ func AdminListApplicationsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := db.DB.Query(`SELECT id, registration_number, status, applicant_name, applicant_nik, applicant_kk, 
+	rows, err := db.DB.Query(db.Rebind(`SELECT id, registration_number, status, applicant_name, applicant_nik, applicant_kk, 
 		applicant_address, applicant_phone, applicant_email, heir_name, death_date, relationship, is_divorced, 
 		file_permohonan, file_pengantar_rt_rw, file_pernyataan_kebenaran, file_sptjm, 
 		file_ktp_pewaris, file_ktp_ahli_waris, file_kk_ahli_waris, file_akta_lahir_ahli_waris, file_ktp_saksi, 
 		file_kematian_ahli_waris_wafat_lebih_dulu, file_pendukung_lainnya, file_surat_nikah_pewaris, 
 		file_ktp_suami, file_ktp_istri, file_akta_cerai_pewaris, rejected_files, 
-		admin_notes, estimated_completion, created_at, updated_at FROM applications ORDER BY created_at DESC`)
+		admin_notes, estimated_completion, created_at, updated_at FROM applications ORDER BY created_at DESC`))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -86,7 +86,7 @@ func AdminGetApplicationHandler(w http.ResponseWriter, r *http.Request) {
 	          admin_notes, estimated_completion, created_at, updated_at 
 	          FROM applications WHERE id = ?`
 
-	err = db.DB.QueryRow(query, id).Scan(
+	err = db.DB.QueryRow(db.Rebind(query), id).Scan(
 		&app.ID, &app.RegistrationNumber, &app.Status, &app.ApplicantName, &app.ApplicantNik, &app.ApplicantKk,
 		&app.ApplicantAddress, &app.ApplicantPhone, &app.ApplicantEmail, &app.HeirName, &app.DeathDate, &app.Relationship, &app.IsDivorced,
 		&app.FilePermohonan, &app.FilePengantarRtRw, &app.FilePernyataanKebenaran, &app.FileSptjm,
@@ -131,7 +131,7 @@ func AdminUpdateStatusHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Fetch current details to trigger email correctly
 	var app db.Application
-	err = db.DB.QueryRow("SELECT applicant_name, applicant_email, registration_number, status FROM applications WHERE id = ?", id).
+	err = db.DB.QueryRow(db.Rebind("SELECT applicant_name, applicant_email, registration_number, status FROM applications WHERE id = ?"), id).
 		Scan(&app.ApplicantName, &app.ApplicantEmail, &app.RegistrationNumber, &app.Status)
 	if err == sql.ErrNoRows {
 		http.Error(w, "Permohonan tidak ditemukan", http.StatusNotFound)
@@ -142,11 +142,11 @@ func AdminUpdateStatusHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Update DB (including rejected_files text column)
-	_, err = db.DB.Exec(`
+	_, err = db.DB.Exec(db.Rebind(`
 		UPDATE applications 
 		SET status = ?, admin_notes = ?, estimated_completion = ?, rejected_files = ?, updated_at = ?
 		WHERE id = ?
-	`, req.Status, req.AdminNotes, req.EstimatedCompletion, req.RejectedFiles, time.Now(), id)
+	`), req.Status, req.AdminNotes, req.EstimatedCompletion, req.RejectedFiles, time.Now(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

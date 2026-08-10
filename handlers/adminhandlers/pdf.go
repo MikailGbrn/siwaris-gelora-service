@@ -133,7 +133,7 @@ func AdminDownloadPDFHandler(w http.ResponseWriter, r *http.Request) {
 	          admin_notes, estimated_completion, created_at, updated_at 
 	          FROM applications WHERE id = ?`
 
-	err = db.DB.QueryRow(query, id).Scan(
+	err = db.DB.QueryRow(db.Rebind(query), id).Scan(
 		&app.ID, &app.RegistrationNumber, &app.Status, &app.ApplicantName, &app.ApplicantNik, &app.ApplicantKk,
 		&app.ApplicantAddress, &app.ApplicantPhone, &app.ApplicantEmail, &app.HeirName, &app.DeathDate, &app.Relationship, &app.IsDivorced,
 		&app.FilePermohonan, &app.FilePengantarRtRw, &app.FilePernyataanKebenaran, &app.FileSptjm,

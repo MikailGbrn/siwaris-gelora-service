@@ -15,3 +15,7 @@ server.exe
 
 # User uploads
 uploads/
+
+# Local Environment Variables
+.env
+*.env

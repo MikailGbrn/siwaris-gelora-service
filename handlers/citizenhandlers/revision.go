@@ -35,7 +35,7 @@ func RevisionHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Fetch current details
 	var app db.Application
-	err = db.DB.QueryRow("SELECT applicant_name, applicant_email, registration_number, rejected_files FROM applications WHERE id = ?", id).
+	err = db.DB.QueryRow(db.Rebind("SELECT applicant_name, applicant_email, registration_number, rejected_files FROM applications WHERE id = ?"), id).
 		Scan(&app.ApplicantName, &app.ApplicantEmail, &app.RegistrationNumber, &app.RejectedFiles)
 	if err != nil {
 		http.Error(w, "Permohonan tidak ditemukan", http.StatusNotFound)
@@ -89,7 +89,7 @@ func RevisionHandler(w http.ResponseWriter, r *http.Request) {
 	// Build update query
 	query := fmt.Sprintf("UPDATE applications SET %s WHERE id = ?", strings.Join(updatedFields, ", "))
 
-	_, err = db.DB.Exec(query, args...)
+	_, err = db.DB.Exec(db.Rebind(query), args...)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -33,7 +33,7 @@ func TrackHandler(w http.ResponseWriter, r *http.Request) {
 	          file_akta_cerai_pewaris, rejected_files, admin_notes, estimated_completion, created_at, updated_at 
 	          FROM applications WHERE registration_number = ? AND applicant_nik = ?`
 
-	err := db.DB.QueryRow(query, regNum, nik).Scan(
+	err := db.DB.QueryRow(db.Rebind(query), regNum, nik).Scan(
 		&app.ID, &app.RegistrationNumber, &app.Status, &app.ApplicantName, &app.ApplicantNik, &app.ApplicantKk,
 		&app.ApplicantAddress, &app.ApplicantPhone, &app.ApplicantEmail, &app.HeirName, &app.DeathDate,
 		&app.Relationship, &app.IsDivorced, &app.FilePermohonan, &app.FilePengantarRtRw, &app.FilePernyataanKebenaran,
