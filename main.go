@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"siwaris-gelora-service/auth"
+	"siwaris-gelora-service/config"
 	"siwaris-gelora-service/db"
 	"siwaris-gelora-service/handlers/adminhandlers"
 	"siwaris-gelora-service/handlers/citizenhandlers"
@@ -39,6 +40,9 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	// Load environment variables from .env file
+	config.LoadEnv(".env")
+
 	// Initialize database
 	dbPath := "./siwaris.db"
 	database := db.InitDB(dbPath)

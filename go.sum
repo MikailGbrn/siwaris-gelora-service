@@ -2,5 +2,9 @@ github.com/golang-jwt/jwt/v5 v5.3.1 h1:kYf81DTWFe7t+1VvL7eS+jKFVWaUnK9cB1qbwn63Y
 github.com/golang-jwt/jwt/v5 v5.3.1/go.mod h1:fxCRLWMO43lRc8nhHWY6LGqRcf+1gQWArsqaEUEa5bE=
 github.com/jung-kurt/gofpdf/v2 v2.17.3 h1:otZXZby2gXJ7uU6pzprXHq/R57lsHLi0WtH79VabWxY=
 github.com/jung-kurt/gofpdf/v2 v2.17.3/go.mod h1:Qx8ZNg4cNsO5i6uLDiBngnm+ii/FjtAqjRNO6drsoYU=
+github.com/lib/pq v1.12.3 h1:tTWxr2YLKwIvK90ZXEw8GP7UFHtcbTtty8zsI+YjrfQ=
+github.com/lib/pq v1.12.3/go.mod h1:/p+8NSbOcwzAEI7wiMXFlgydTwcgTr3OSKMsD2BitpA=
 github.com/mattn/go-sqlite3 v1.14.48 h1:7XHIgl0a8HwOaiK4E47ozLkST78rR9+OtNGx27D/TFs=
 github.com/mattn/go-sqlite3 v1.14.48/go.mod h1:6JTjA44L93a0QCyJef5YvlPoKXntQPjzWv5gtm9sB6w=
+golang.org/x/crypto v0.54.0 h1:YLIA59K4fiNzHzjnZt2tUJQjQtUWfWbeHBqKtk3eScw=
+golang.org/x/crypto v0.54.0/go.mod h1:KWL8ny2AZdGR2cWmzeHrp2azQPGogOv+HeQaVEXC2dk=

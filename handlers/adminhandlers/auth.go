@@ -1,9 +1,13 @@
 package adminhandlers
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"siwaris-gelora-service/auth"
+	"siwaris-gelora-service/db"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 // LoginRequest defines credentials payload
@@ -17,7 +21,7 @@ type LoginResponse struct {
 	Token string `json:"token"`
 }
 
-// AdminLoginHandler verifies admin credentials and returns a JWT token
+// AdminLoginHandler verifies admin credentials against database and returns a JWT token
 func AdminLoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -31,7 +35,20 @@ func AdminLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if creds.Email != auth.AdminEmail || creds.Password != auth.AdminPassword {
+	// Query hashed password from database
+	var passwordHash string
+	err = db.DB.QueryRow(db.Rebind("SELECT password_hash FROM admins WHERE email = ?"), creds.Email).Scan(&passwordHash)
+	if err == sql.ErrNoRows {
+		http.Error(w, "Email atau password salah", http.StatusUnauthorized)
+		return
+	} else if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	// Compare password with hashed value using bcrypt
+	err = bcrypt.CompareHashAndPassword([]byte(passwordHash), []byte(creds.Password))
+	if err != nil {
 		http.Error(w, "Email atau password salah", http.StatusUnauthorized)
 		return
 	}

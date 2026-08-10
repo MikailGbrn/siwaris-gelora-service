@@ -4,17 +4,24 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var jwtKey = []byte("siwaris_gelora_secret_key_2026")
+func getEnvOrDefault(key, defaultValue string) string {
+	if val := os.Getenv(key); val != "" {
+		return val
+	}
+	return defaultValue
+}
 
-// Hardcoded admin credentials for local/SIT
-const AdminEmail = "admin@gelora.go.id"
-const AdminPassword = "password123"
+// Configurable credentials and signing key
+var AdminEmail = getEnvOrDefault("ADMIN_EMAIL", "admin@gelora.go.id")
+var AdminPassword = getEnvOrDefault("ADMIN_PASSWORD", "password123")
+var JWTSecret = []byte(getEnvOrDefault("JWT_SECRET", "siwaris_gelora_secret_key_2026"))
 
 type Claims struct {
 	Username string `json:"username"`
@@ -32,14 +39,14 @@ func GenerateJWT(username string) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(jwtKey)
+	return token.SignedString(JWTSecret)
 }
 
 // VerifyJWT parses and validates the token
 func VerifyJWT(tokenString string) (*Claims, error) {
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return jwtKey, nil
+		return JWTSecret, nil
 	})
 
 	if err != nil {

@@ -46,9 +46,12 @@ func sendEmail(to string, subject string, htmlContent string) error {
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: 15 * time.Second,
+	}
 	resp, err := client.Do(req)
 	if err != nil {
+		log.Printf("ERROR: Resend API request failed: %v\n", err)
 		return err
 	}
 	defer resp.Body.Close()
@@ -56,6 +59,7 @@ func sendEmail(to string, subject string, htmlContent string) error {
 	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 		bodyBytes, _ := io.ReadAll(resp.Body)
 		errMsg := string(bodyBytes)
+		log.Printf("ERROR: Resend API returned status %s: %s\n", resp.Status, errMsg)
 		if resp.StatusCode == http.StatusBadRequest && strings.Contains(strings.ToLower(errMsg), "sandbox") {
 			log.Printf("\n--- [RESEND SANDBOX LIMITATION] ---\nResend API rejected the email because you are in sandbox mode and trying to send to '%s'.\nTo fix this:\n1. Send emails to the address you used to register on Resend.\n2. Or verify a custom domain on the Resend dashboard.\nError details: %s\n-----------------------------------\n", to, errMsg)
 		}
