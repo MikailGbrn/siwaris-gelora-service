@@ -170,7 +170,7 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// 2. Global optional files
-	globalOptionalKeys := []string{"file_kematian_ahli_waris_wafat_lebih_dulu", "file_pendukung_lainnya"}
+	globalOptionalKeys := []string{"file_kematian_ahli_waris_wafat_lebih_dulu", "file_pendukung_lainnya", "file_surat_kuasa"}
 	for _, key := range globalOptionalKeys {
 		file, handler, err := r.FormFile(key)
 		if err != nil {
@@ -245,8 +245,8 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 				file_sptjm, file_ktp_pewaris, file_ktp_ahli_waris, file_kk_ahli_waris,
 				file_akta_lahir_ahli_waris, file_ktp_saksi, file_kematian_ahli_waris_wafat_lebih_dulu,
 				file_pendukung_lainnya, file_surat_nikah_pewaris, file_ktp_suami, file_ktp_istri,
-				file_akta_cerai_pewaris, admin_notes, estimated_completion, created_at, updated_at
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+				file_akta_cerai_pewaris, file_surat_kuasa, admin_notes, estimated_completion, created_at, updated_at
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 			RETURNING id
 		`
 		err = tx.QueryRow(db.Rebind(insertSQL), "TEMP", "Menunggu Verifikasi", applicantName, applicantNik, applicantKk,
@@ -255,7 +255,7 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 			filePaths["file_sptjm"], filePaths["file_ktp_pewaris"], filePaths["file_ktp_ahli_waris"], filePaths["file_kk_ahli_waris"],
 			filePaths["file_akta_lahir_ahli_waris"], filePaths["file_ktp_saksi"], filePaths["file_kematian_ahli_waris_wafat_lebih_dulu"],
 			filePaths["file_pendukung_lainnya"], filePaths["file_surat_nikah_pewaris"], filePaths["file_ktp_suami"], filePaths["file_ktp_istri"],
-			filePaths["file_akta_cerai_pewaris"], "", "", time.Now(), time.Now()).Scan(&lastID)
+			filePaths["file_akta_cerai_pewaris"], filePaths["file_surat_kuasa"], "", "", time.Now(), time.Now()).Scan(&lastID)
 		if err != nil {
 			tx.Rollback()
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -270,8 +270,8 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 				file_sptjm, file_ktp_pewaris, file_ktp_ahli_waris, file_kk_ahli_waris,
 				file_akta_lahir_ahli_waris, file_ktp_saksi, file_kematian_ahli_waris_wafat_lebih_dulu,
 				file_pendukung_lainnya, file_surat_nikah_pewaris, file_ktp_suami, file_ktp_istri,
-				file_akta_cerai_pewaris, admin_notes, estimated_completion, created_at, updated_at
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+				file_akta_cerai_pewaris, file_surat_kuasa, admin_notes, estimated_completion, created_at, updated_at
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`
 		res, err := tx.Exec(db.Rebind(insertSQL), "TEMP", "Menunggu Verifikasi", applicantName, applicantNik, applicantKk,
 			applicantAddress, applicantPhone, applicantEmail, heirName, deathDate, relationship, isDivorced,
@@ -279,7 +279,7 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 			filePaths["file_sptjm"], filePaths["file_ktp_pewaris"], filePaths["file_ktp_ahli_waris"], filePaths["file_kk_ahli_waris"],
 			filePaths["file_akta_lahir_ahli_waris"], filePaths["file_ktp_saksi"], filePaths["file_kematian_ahli_waris_wafat_lebih_dulu"],
 			filePaths["file_pendukung_lainnya"], filePaths["file_surat_nikah_pewaris"], filePaths["file_ktp_suami"], filePaths["file_ktp_istri"],
-			filePaths["file_akta_cerai_pewaris"], "", "", time.Now(), time.Now())
+			filePaths["file_akta_cerai_pewaris"], filePaths["file_surat_kuasa"], "", "", time.Now(), time.Now())
 		if err != nil {
 			tx.Rollback()
 			http.Error(w, err.Error(), http.StatusInternalServerError)
