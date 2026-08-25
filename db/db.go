@@ -42,6 +42,7 @@ type Application struct {
 	FileKtpSuami                          string    `json:"file_ktp_suami"`
 	FileKtpIstri                          string    `json:"file_ktp_istri"`
 	FileAktaCeraiPewaris                  string    `json:"file_akta_cerai_pewaris"`
+	FileSuratKuasa                        string    `json:"file_surat_kuasa"`
 	RejectedFiles                         string    `json:"rejected_files"` // JSON array string of rejected keys e.g. ["file_ktp_ahli_waris"]
 	AdminNotes                            string    `json:"admin_notes"`
 	EstimatedCompletion                   string    `json:"estimated_completion"`
@@ -135,8 +136,8 @@ func createTable() {
 			file_pendukung_lainnya TEXT,
 			file_surat_nikah_pewaris TEXT,
 			file_ktp_suami TEXT,
-			file_ktp_istri TEXT,
 			file_akta_cerai_pewaris TEXT,
+			file_surat_kuasa TEXT,
 			rejected_files TEXT NOT NULL DEFAULT '',
 			admin_notes TEXT,
 			estimated_completion VARCHAR(100),
@@ -179,8 +180,8 @@ func createTable() {
 			file_pendukung_lainnya TEXT,
 			file_surat_nikah_pewaris TEXT,
 			file_ktp_suami TEXT,
-			file_ktp_istri TEXT,
 			file_akta_cerai_pewaris TEXT,
+			file_surat_kuasa TEXT,
 			rejected_files TEXT NOT NULL DEFAULT '',
 			admin_notes TEXT,
 			estimated_completion TEXT,
@@ -197,11 +198,16 @@ func createTable() {
 		);`
 	}
 
-	// Migrate Applications Table
-	// Migrate Applications Table
 	_, err := DB.Exec(createApplicationsSQL)
 	if err != nil {
 		log.Fatal("Error executing applications migration: ", err)
+	}
+
+	// Alter table to add file_surat_kuasa if it doesn't exist yet (for backward compatibility)
+	if DbType == "postgres" {
+		_, _ = DB.Exec("ALTER TABLE applications ADD COLUMN IF NOT EXISTS file_surat_kuasa TEXT DEFAULT '';")
+	} else {
+		_, _ = DB.Exec("ALTER TABLE applications ADD COLUMN file_surat_kuasa TEXT;")
 	}
 
 	// Migrate Admins Table
