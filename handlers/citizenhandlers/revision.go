@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -97,6 +98,13 @@ func RevisionHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Send revision received notification email for resubmission review
 	go email.SendRevisionReceivedEmail(app.ApplicantEmail, app.ApplicantName, app.RegistrationNumber)
+
+	// Trigger admin email notification in background
+	adminEmail := os.Getenv("ADMIN_NOTIFICATION_EMAIL")
+	if adminEmail == "" {
+		adminEmail = "siwarisgelora@gmail.com"
+	}
+	go email.SendAdminRevisionSubmittedEmail(adminEmail, app.ApplicantName, app.RegistrationNumber)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{
