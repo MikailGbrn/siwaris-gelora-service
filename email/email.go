@@ -267,3 +267,155 @@ func SendStatusUpdateEmail(to string, name string, regNum string, status string,
 		log.Printf("\n--- [FALLBACK MOCK EMAIL SENT] ---\nTo: %s\nSubject: %s\nBody:\nHalo %s, status permohonan %s diubah menjadi: %s. Catatan: %s\n-------------------------\n", to, subject, name, regNum, status, notes)
 	}
 }
+
+// SendAdminNewSubmissionEmail notifies the admin when a new application is submitted
+func SendAdminNewSubmissionEmail(to string, applicantName string, regNum string, relationship string) {
+	subject := fmt.Sprintf("[SIWARIS GELORA] PERMOHONAN BARU MASUK - %s", regNum)
+
+	panelURL := os.Getenv("ADMIN_PANEL_URL")
+	if panelURL == "" {
+		panelURL = "http://localhost:5173/login"
+	}
+
+	htmlContent := fmt.Sprintf(`
+	<!DOCTYPE html>
+	<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Permohonan Baru Masuk</title>
+		<style>
+			body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333333; margin: 0; padding: 0; background-color: #f4f7f6; }
+			.container { max-width: 600px; margin: 20px auto; padding: 30px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+			.header { text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 25px; }
+			.header h1 { color: #1e3a8a; margin: 0; font-size: 24px; }
+			.content { font-size: 16px; }
+			.info-box { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 20px; margin: 20px 0; }
+			.btn-link { display: inline-block; padding: 12px 24px; color: #ffffff; background-color: #1e3a8a; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 15px; text-align: center; }
+			.footer { text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 30px; }
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<div class="header">
+				<h1>SIWARIS GELORA - NOTIFIKASI ADMIN</h1>
+				<p style="margin: 5px 0 0 0; color: #64748b; font-size: 14px;">Kelurahan Gelora - Tanah Abang, Jakarta Pusat</p>
+			</div>
+			<div class="content">
+				<p>Halo Petugas Administrator,</p>
+				<p>Sebuah permohonan Surat Pernyataan Ahli Waris baru telah berhasil diajukan oleh pemohon dan membutuhkan verifikasi berkas dari pihak Kelurahan.</p>
+				
+				<div class="info-box">
+					<table style="width: 100%; border-collapse: collapse; font-size: 15px;">
+						<tr>
+							<td style="padding: 6px 0; color: #64748b; width: 40%;">Nomor Registrasi:</td>
+							<td style="padding: 6px 0; font-weight: bold; color: #1e3a8a;">%s</td>
+						</tr>
+						<tr>
+							<td style="padding: 6px 0; color: #64748b;">Nama Pemohon:</td>
+							<td style="padding: 6px 0; font-weight: bold;">%s</td>
+						</tr>
+						<tr>
+							<td style="padding: 6px 0; color: #64748b;">Hubungan Pewaris:</td>
+							<td style="padding: 6px 0;">%s</td>
+						</tr>
+						<tr>
+							<td style="padding: 6px 0; color: #64748b;">Waktu Pengajuan:</td>
+							<td style="padding: 6px 0; color: #64748b;">%s</td>
+						</tr>
+					</table>
+				</div>
+
+				<p>Mohon segera masuk ke Admin Dashboard untuk memeriksa kelengkapan dokumen pendukung yang diunggah pemohon.</p>
+				
+				<div style="text-align: center;">
+					<a href="%s" class="btn-link" style="color: #ffffff;">Masuk ke Panel Admin</a>
+				</div>
+			</div>
+			<div class="footer">
+				<p>&copy; 2026 Pemerintah Provinsi DKI Jakarta | Kelurahan Gelora</p>
+				<p>Email ini dikirimkan secara otomatis oleh sistem SIWARIS GELORA untuk Petugas Administrator.</p>
+			</div>
+		</div>
+	</body>
+	</html>
+	`, regNum, applicantName, relationship, time.Now().Format("02-01-2006 15:04 MST"), panelURL)
+
+	err := sendEmail(to, subject, htmlContent)
+	if err != nil {
+		log.Printf("\n--- [FALLBACK MOCK ADMIN EMAIL SENT] ---\nTo: %s\nSubject: %s\nBody:\nNotifikasi Baru: Permohonan baru %s oleh %s (%s) membutuhkan verifikasi.\n-------------------------\n", to, subject, regNum, applicantName, relationship)
+	}
+}
+
+// SendAdminRevisionSubmittedEmail notifies the admin when a citizen submits revision files
+func SendAdminRevisionSubmittedEmail(to string, applicantName string, regNum string) {
+	subject := fmt.Sprintf("[SIWARIS GELORA] PERBAIKAN BERKAS DIUNGGAH - %s", regNum)
+
+	panelURL := os.Getenv("ADMIN_PANEL_URL")
+	if panelURL == "" {
+		panelURL = "http://localhost:5173/login"
+	}
+
+	htmlContent := fmt.Sprintf(`
+	<!DOCTYPE html>
+	<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Perbaikan Berkas Diunggah</title>
+		<style>
+			body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333333; margin: 0; padding: 0; background-color: #f4f7f6; }
+			.container { max-width: 600px; margin: 20px auto; padding: 30px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+			.header { text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 25px; }
+			.header h1 { color: #b91c1c; margin: 0; font-size: 24px; }
+			.content { font-size: 16px; }
+			.info-box { background-color: #fffbeb; border: 1px solid #fef3c7; border-radius: 6px; padding: 20px; margin: 20px 0; }
+			.btn-link { display: inline-block; padding: 12px 24px; color: #ffffff; background-color: #b91c1c; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 15px; text-align: center; }
+			.footer { text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 30px; }
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<div class="header">
+				<h1>SIWARIS GELORA - NOTIFIKASI ADMIN</h1>
+				<p style="margin: 5px 0 0 0; color: #64748b; font-size: 14px;">Kelurahan Gelora - Tanah Abang, Jakarta Pusat</p>
+			</div>
+			<div class="content">
+				<p>Halo Petugas Administrator,</p>
+				<p>Pemohon telah mengunggah berkas perbaikan (revisi) untuk permohonan yang sebelumnya ditandai <em>"Perlu Perbaikan"</em>.</p>
+				
+				<div class="info-box">
+					<table style="width: 100%; border-collapse: collapse; font-size: 15px;">
+						<tr>
+							<td style="padding: 6px 0; color: #64748b; width: 40%;">Nomor Registrasi:</td>
+							<td style="padding: 6px 0; font-weight: bold; color: #b91c1c;">%s</td>
+						</tr>
+						<tr>
+							<td style="padding: 6px 0; color: #64748b;">Nama Pemohon:</td>
+							<td style="padding: 6px 0; font-weight: bold;">%s</td>
+						</tr>
+						<tr>
+							<td style="padding: 6px 0; color: #64748b;">Waktu Unggah:</td>
+							<td style="padding: 6px 0; color: #64748b;">%s</td>
+						</tr>
+					</table>
+				</div>
+
+				<p>Mohon segera masuk ke Admin Dashboard untuk memeriksa kembali berkas perbaikan tersebut dan melanjutkan proses pelayanan.</p>
+				
+				<div style="text-align: center;">
+					<a href="%s" class="btn-link" style="color: #ffffff;">Masuk ke Panel Admin</a>
+				</div>
+			</div>
+			<div class="footer">
+				<p>&copy; 2026 Pemerintah Provinsi DKI Jakarta | Kelurahan Gelora</p>
+				<p>Email ini dikirimkan secara otomatis oleh sistem SIWARIS GELORA untuk Petugas Administrator.</p>
+			</div>
+		</div>
+	</body>
+	</html>
+	`, regNum, applicantName, time.Now().Format("02-01-2006 15:04 MST"), panelURL)
+
+	err := sendEmail(to, subject, htmlContent)
+	if err != nil {
+		log.Printf("\n--- [FALLBACK MOCK ADMIN EMAIL SENT] ---\nTo: %s\nSubject: %s\nBody:\nNotifikasi Baru: Perbaikan berkas diunggah untuk %s oleh %s.\n-------------------------\n", to, subject, regNum, applicantName)
+	}
+}

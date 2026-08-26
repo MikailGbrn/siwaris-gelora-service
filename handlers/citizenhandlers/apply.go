@@ -141,7 +141,7 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 	relationship := r.FormValue("relationship")
 	isDivorced := r.FormValue("is_divorced")
 
-	if applicantName == "" || applicantNik == "" || applicantKk == "" || applicantEmail == "" || heirName == "" {
+	if applicantName == "" || applicantNik == "" || applicantKk == "" || applicantPhone == "" || applicantEmail == "" || heirName == "" {
 		http.Error(w, "Semua field utama wajib diisi", http.StatusBadRequest)
 		return
 	}
@@ -151,7 +151,7 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 	// 1. Global mandatory files
 	globalMandatoryKeys := []string{
 		"file_permohonan", "file_pengantar_rt_rw", "file_pernyataan_kebenaran", "file_sptjm",
-		"file_ktp_pewaris", "file_ktp_ahli_waris", "file_kk_ahli_waris", "file_akta_lahir_ahli_waris",
+		"file_ktp_pewaris", "file_ktp_ahli_waris", "file_kematian_pewaris", "file_kk_ahli_waris", "file_akta_lahir_ahli_waris",
 		"file_ktp_saksi",
 	}
 	for _, key := range globalMandatoryKeys {
@@ -242,17 +242,17 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 				registration_number, status, applicant_name, applicant_nik, applicant_kk, 
 				applicant_address, applicant_phone, applicant_email, heir_name, death_date, 
 				relationship, is_divorced, file_permohonan, file_pengantar_rt_rw, file_pernyataan_kebenaran,
-				file_sptjm, file_ktp_pewaris, file_ktp_ahli_waris, file_kk_ahli_waris,
+				file_sptjm, file_ktp_pewaris, file_ktp_ahli_waris, file_kematian_pewaris, file_kk_ahli_waris,
 				file_akta_lahir_ahli_waris, file_ktp_saksi, file_kematian_ahli_waris_wafat_lebih_dulu,
 				file_pendukung_lainnya, file_surat_nikah_pewaris, file_ktp_suami, file_ktp_istri,
 				file_akta_cerai_pewaris, file_surat_kuasa, admin_notes, estimated_completion, created_at, updated_at
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 			RETURNING id
 		`
 		err = tx.QueryRow(db.Rebind(insertSQL), "TEMP", "Menunggu Verifikasi", applicantName, applicantNik, applicantKk,
 			applicantAddress, applicantPhone, applicantEmail, heirName, deathDate, relationship, isDivorced,
 			filePaths["file_permohonan"], filePaths["file_pengantar_rt_rw"], filePaths["file_pernyataan_kebenaran"],
-			filePaths["file_sptjm"], filePaths["file_ktp_pewaris"], filePaths["file_ktp_ahli_waris"], filePaths["file_kk_ahli_waris"],
+			filePaths["file_sptjm"], filePaths["file_ktp_pewaris"], filePaths["file_ktp_ahli_waris"], filePaths["file_kematian_pewaris"], filePaths["file_kk_ahli_waris"],
 			filePaths["file_akta_lahir_ahli_waris"], filePaths["file_ktp_saksi"], filePaths["file_kematian_ahli_waris_wafat_lebih_dulu"],
 			filePaths["file_pendukung_lainnya"], filePaths["file_surat_nikah_pewaris"], filePaths["file_ktp_suami"], filePaths["file_ktp_istri"],
 			filePaths["file_akta_cerai_pewaris"], filePaths["file_surat_kuasa"], "", "", time.Now(), time.Now()).Scan(&lastID)
@@ -267,16 +267,16 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 				registration_number, status, applicant_name, applicant_nik, applicant_kk, 
 				applicant_address, applicant_phone, applicant_email, heir_name, death_date, 
 				relationship, is_divorced, file_permohonan, file_pengantar_rt_rw, file_pernyataan_kebenaran,
-				file_sptjm, file_ktp_pewaris, file_ktp_ahli_waris, file_kk_ahli_waris,
+				file_sptjm, file_ktp_pewaris, file_ktp_ahli_waris, file_kematian_pewaris, file_kk_ahli_waris,
 				file_akta_lahir_ahli_waris, file_ktp_saksi, file_kematian_ahli_waris_wafat_lebih_dulu,
 				file_pendukung_lainnya, file_surat_nikah_pewaris, file_ktp_suami, file_ktp_istri,
 				file_akta_cerai_pewaris, file_surat_kuasa, admin_notes, estimated_completion, created_at, updated_at
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`
 		res, err := tx.Exec(db.Rebind(insertSQL), "TEMP", "Menunggu Verifikasi", applicantName, applicantNik, applicantKk,
 			applicantAddress, applicantPhone, applicantEmail, heirName, deathDate, relationship, isDivorced,
 			filePaths["file_permohonan"], filePaths["file_pengantar_rt_rw"], filePaths["file_pernyataan_kebenaran"],
-			filePaths["file_sptjm"], filePaths["file_ktp_pewaris"], filePaths["file_ktp_ahli_waris"], filePaths["file_kk_ahli_waris"],
+			filePaths["file_sptjm"], filePaths["file_ktp_pewaris"], filePaths["file_ktp_ahli_waris"], filePaths["file_kematian_pewaris"], filePaths["file_kk_ahli_waris"],
 			filePaths["file_akta_lahir_ahli_waris"], filePaths["file_ktp_saksi"], filePaths["file_kematian_ahli_waris_wafat_lebih_dulu"],
 			filePaths["file_pendukung_lainnya"], filePaths["file_surat_nikah_pewaris"], filePaths["file_ktp_suami"], filePaths["file_ktp_istri"],
 			filePaths["file_akta_cerai_pewaris"], filePaths["file_surat_kuasa"], "", "", time.Now(), time.Now())
@@ -311,6 +311,13 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Trigger mock email in background
 	go email.SendSubmissionEmail(applicantEmail, applicantName, regNum)
+
+	// Trigger admin email notification in background
+	adminEmail := os.Getenv("ADMIN_NOTIFICATION_EMAIL")
+	if adminEmail == "" {
+		adminEmail = "siwarisgelora@gmail.com"
+	}
+	go email.SendAdminNewSubmissionEmail(adminEmail, applicantName, regNum, relationship)
 
 	// Return success
 	w.Header().Set("Content-Type", "application/json")
