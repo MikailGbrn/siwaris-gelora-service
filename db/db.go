@@ -211,9 +211,13 @@ func createTable() {
 		_, _ = DB.Exec("ALTER TABLE applications ADD COLUMN IF NOT EXISTS file_surat_kuasa TEXT DEFAULT '';")
 		_, _ = DB.Exec("ALTER TABLE applications ADD COLUMN IF NOT EXISTS file_kematian_pewaris TEXT DEFAULT '';")
 	} else {
-		_, _ = DB.Exec("ALTER TABLE applications ADD COLUMN file_surat_kuasa TEXT;")
-		_, _ = DB.Exec("ALTER TABLE applications ADD COLUMN file_kematian_pewaris TEXT;")
+		_, _ = DB.Exec("ALTER TABLE applications ADD COLUMN file_surat_kuasa TEXT DEFAULT '';")
+		_, _ = DB.Exec("ALTER TABLE applications ADD COLUMN file_kematian_pewaris TEXT DEFAULT '';")
 	}
+
+	// Update existing NULL values to empty strings to prevent Go SQL scan errors
+	_, _ = DB.Exec(Rebind("UPDATE applications SET file_surat_kuasa = '' WHERE file_surat_kuasa IS NULL"))
+	_, _ = DB.Exec(Rebind("UPDATE applications SET file_kematian_pewaris = '' WHERE file_kematian_pewaris IS NULL"))
 
 	// Migrate Admins Table
 	_, err = DB.Exec(createAdminsSQL)
