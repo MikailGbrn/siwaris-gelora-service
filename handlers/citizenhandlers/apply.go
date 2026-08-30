@@ -150,7 +150,7 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 
 	// 1. Global mandatory files
 	globalMandatoryKeys := []string{
-		"file_permohonan", "file_pengantar_rt_rw", "file_pernyataan_kebenaran", "file_sptjm",
+		"file_permohonan", "file_pengantar_rt_rw", "file_pernyataan_kebenaran",
 		"file_ktp_pewaris", "file_ktp_ahli_waris", "file_kematian_pewaris", "file_kk_ahli_waris", "file_akta_lahir_ahli_waris",
 		"file_ktp_saksi",
 	}
@@ -252,7 +252,7 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 		err = tx.QueryRow(db.Rebind(insertSQL), "TEMP", "Menunggu Verifikasi", applicantName, applicantNik, applicantKk,
 			applicantAddress, applicantPhone, applicantEmail, heirName, deathDate, relationship, isDivorced,
 			filePaths["file_permohonan"], filePaths["file_pengantar_rt_rw"], filePaths["file_pernyataan_kebenaran"],
-			filePaths["file_sptjm"], filePaths["file_ktp_pewaris"], filePaths["file_ktp_ahli_waris"], filePaths["file_kematian_pewaris"], filePaths["file_kk_ahli_waris"],
+			"", filePaths["file_ktp_pewaris"], filePaths["file_ktp_ahli_waris"], filePaths["file_kematian_pewaris"], filePaths["file_kk_ahli_waris"],
 			filePaths["file_akta_lahir_ahli_waris"], filePaths["file_ktp_saksi"], filePaths["file_kematian_ahli_waris_wafat_lebih_dulu"],
 			filePaths["file_pendukung_lainnya"], filePaths["file_surat_nikah_pewaris"], filePaths["file_ktp_suami"], filePaths["file_ktp_istri"],
 			filePaths["file_akta_cerai_pewaris"], filePaths["file_surat_kuasa"], "", "", time.Now(), time.Now()).Scan(&lastID)
@@ -276,7 +276,7 @@ func ApplyHandler(w http.ResponseWriter, r *http.Request) {
 		res, err := tx.Exec(db.Rebind(insertSQL), "TEMP", "Menunggu Verifikasi", applicantName, applicantNik, applicantKk,
 			applicantAddress, applicantPhone, applicantEmail, heirName, deathDate, relationship, isDivorced,
 			filePaths["file_permohonan"], filePaths["file_pengantar_rt_rw"], filePaths["file_pernyataan_kebenaran"],
-			filePaths["file_sptjm"], filePaths["file_ktp_pewaris"], filePaths["file_ktp_ahli_waris"], filePaths["file_kematian_pewaris"], filePaths["file_kk_ahli_waris"],
+			"", filePaths["file_ktp_pewaris"], filePaths["file_ktp_ahli_waris"], filePaths["file_kematian_pewaris"], filePaths["file_kk_ahli_waris"],
 			filePaths["file_akta_lahir_ahli_waris"], filePaths["file_ktp_saksi"], filePaths["file_kematian_ahli_waris_wafat_lebih_dulu"],
 			filePaths["file_pendukung_lainnya"], filePaths["file_surat_nikah_pewaris"], filePaths["file_ktp_suami"], filePaths["file_ktp_istri"],
 			filePaths["file_akta_cerai_pewaris"], filePaths["file_surat_kuasa"], "", "", time.Now(), time.Now())
