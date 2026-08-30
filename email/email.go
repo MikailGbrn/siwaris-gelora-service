@@ -19,10 +19,21 @@ type ResendPayload struct {
 	HTML    string   `json:"html"`
 }
 
-func sendEmail(to string, subject string, htmlContent string) error {
-	apiKey := os.Getenv("RESEND_API_KEY")
+func sendEmail(to string, subject string, htmlContent string, isAdmin bool) error {
+	apiKey := ""
+	if isAdmin {
+		apiKey = os.Getenv("RESEND_API_KEY_ADMIN")
+	} else {
+		apiKey = os.Getenv("RESEND_API_KEY_APPLICANT")
+	}
+
+	// Fallback to generic RESEND_API_KEY if specific ones are not set
 	if apiKey == "" {
-		log.Println("WARNING: RESEND_API_KEY environment variable is not set. Falling back to mock logging.")
+		apiKey = os.Getenv("RESEND_API_KEY")
+	}
+
+	if apiKey == "" {
+		log.Println("WARNING: RESEND_API_KEY / RESEND_API_KEY_ADMIN / RESEND_API_KEY_APPLICANT environment variable is not set. Falling back to mock logging.")
 		return fmt.Errorf("RESEND_API_KEY not set")
 	}
 
@@ -125,7 +136,7 @@ func SendSubmissionEmail(to string, name string, regNum string) {
 	</html>
 	`, name, regNum)
 
-	err := sendEmail(to, subject, htmlContent)
+	err := sendEmail(to, subject, htmlContent, false)
 	if err != nil {
 		log.Printf("\n--- [FALLBACK MOCK EMAIL SENT] ---\nTo: %s\nSubject: %s\nBody:\nHallo %s, permohonan Anda dengan nomor registrasi %s telah kami terima.\n-------------------------\n", to, subject, name, regNum)
 	}
@@ -179,7 +190,7 @@ func SendRevisionReceivedEmail(to string, name string, regNum string) {
 	</html>
 	`, name, regNum)
 
-	err := sendEmail(to, subject, htmlContent)
+	err := sendEmail(to, subject, htmlContent, false)
 	if err != nil {
 		log.Printf("\n--- [FALLBACK MOCK EMAIL SENT] ---\nTo: %s\nSubject: %s\nBody:\nHalo %s, dokumen perbaikan untuk permohonan %s telah kami terima.\n-------------------------\n", to, subject, name, regNum)
 	}
@@ -262,7 +273,7 @@ func SendStatusUpdateEmail(to string, name string, regNum string, status string,
 		return ""
 	}(), time.Now().UnixNano())
 
-	err := sendEmail(to, subject, htmlContent)
+	err := sendEmail(to, subject, htmlContent, false)
 	if err != nil {
 		log.Printf("\n--- [FALLBACK MOCK EMAIL SENT] ---\nTo: %s\nSubject: %s\nBody:\nHalo %s, status permohonan %s diubah menjadi: %s. Catatan: %s\n-------------------------\n", to, subject, name, regNum, status, notes)
 	}
@@ -340,7 +351,7 @@ func SendAdminNewSubmissionEmail(to string, applicantName string, regNum string,
 	</html>
 	`, regNum, applicantName, relationship, time.Now().Format("02-01-2006 15:04 MST"), panelURL)
 
-	err := sendEmail(to, subject, htmlContent)
+	err := sendEmail(to, subject, htmlContent, true)
 	if err != nil {
 		log.Printf("\n--- [FALLBACK MOCK ADMIN EMAIL SENT] ---\nTo: %s\nSubject: %s\nBody:\nNotifikasi Baru: Permohonan baru %s oleh %s (%s) membutuhkan verifikasi.\n-------------------------\n", to, subject, regNum, applicantName, relationship)
 	}
@@ -414,7 +425,7 @@ func SendAdminRevisionSubmittedEmail(to string, applicantName string, regNum str
 	</html>
 	`, regNum, applicantName, time.Now().Format("02-01-2006 15:04 MST"), panelURL)
 
-	err := sendEmail(to, subject, htmlContent)
+	err := sendEmail(to, subject, htmlContent, true)
 	if err != nil {
 		log.Printf("\n--- [FALLBACK MOCK ADMIN EMAIL SENT] ---\nTo: %s\nSubject: %s\nBody:\nNotifikasi Baru: Perbaikan berkas diunggah untuk %s oleh %s.\n-------------------------\n", to, subject, regNum, applicantName)
 	}
