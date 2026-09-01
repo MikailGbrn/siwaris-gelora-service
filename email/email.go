@@ -38,7 +38,7 @@ func sendEmail(to string, subject string, htmlContent string, isAdmin bool) erro
 	}
 
 	payload := ResendPayload{
-		From:    "SIWARIS Gelora <onboarding@resend.dev>",
+		From:    "SIWARIS Gelora <no-reply@siwarisgelora.com>",
 		To:      []string{to},
 		Subject: subject,
 		HTML:    htmlContent,
