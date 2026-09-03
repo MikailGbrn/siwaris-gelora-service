@@ -81,6 +81,59 @@ func sendEmail(to string, subject string, htmlContent string, isAdmin bool) erro
 	return nil
 }
 
+// SendOTPEmail sends a 6-digit OTP verification code to the citizen
+func SendOTPEmail(to string, otpCode string) error {
+	subject := fmt.Sprintf("[SIWARIS GELORA] Kode Verifikasi Email: %s", otpCode)
+
+	htmlContent := fmt.Sprintf(`
+	<!DOCTYPE html>
+	<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Kode Verifikasi Email</title>
+		<style>
+			body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333333; margin: 0; padding: 0; background-color: #f4f7f6; }
+			.container { max-width: 500px; margin: 20px auto; padding: 30px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+			.header { text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px; }
+			.header h1 { color: #0284c7; margin: 0; font-size: 22px; }
+			.content { text-align: center; font-size: 15px; }
+			.otp-box { background-color: #f0f9ff; border: 2px dashed #0284c7; border-radius: 8px; padding: 15px; margin: 20px 0; display: inline-block; width: 80%%; }
+			.otp-code { font-size: 32px; font-weight: bold; color: #0369a1; letter-spacing: 6px; }
+			.footer { text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 15px; margin-top: 25px; }
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<div class="header">
+				<h1>SIWARIS GELORA</h1>
+				<p style="margin: 4px 0 0 0; color: #64748b; font-size: 13px;">Kelurahan Gelora - Tanah Abang, Jakarta Pusat</p>
+			</div>
+			<div class="content">
+				<p>Berikut adalah kode verifikasi OTP untuk mengonfirmasi email Anda pada formulir pendaftaran SIWARIS Gelora:</p>
+				
+				<div class="otp-box">
+					<div style="font-size: 12px; color: #0369a1; text-transform: uppercase; font-weight: bold; margin-bottom: 5px;">Kode Verifikasi OTP</div>
+					<div class="otp-code">%s</div>
+				</div>
+
+				<p style="font-size: 13px; color: #64748b;">Kode ini berlaku selama <strong>10 menit</strong>. Jangan berikan kode ini kepada siapapun.</p>
+			</div>
+			<div class="footer">
+				<p>&copy; 2026 Pemerintah Provinsi DKI Jakarta | Kelurahan Gelora</p>
+			</div>
+		</div>
+	</body>
+	</html>
+	`, otpCode)
+
+	err := sendEmail(to, subject, htmlContent, false)
+	if err != nil {
+		log.Printf("\n--- [FALLBACK MOCK OTP EMAIL] ---\nTo: %s\nOTP Code: %s\n-------------------------\n", to, otpCode)
+		return err
+	}
+	return nil
+}
+
 // SendSubmissionEmail sends a submission confirmation email to the citizen
 func SendSubmissionEmail(to string, name string, regNum string) {
 	subject := fmt.Sprintf("[SIWARIS GELORA] Pendaftaran Berhasil - %s", regNum)
