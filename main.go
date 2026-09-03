@@ -55,6 +55,8 @@ func main() {
 	mux.HandleFunc("POST /api/apply", citizenhandlers.ApplyHandler)
 	mux.HandleFunc("POST /api/apply/revision", citizenhandlers.RevisionHandler)
 	mux.HandleFunc("GET /api/track", citizenhandlers.TrackHandler)
+	mux.HandleFunc("POST /api/otp/send", citizenhandlers.SendOTPHandler)
+	mux.HandleFunc("POST /api/otp/verify", citizenhandlers.VerifyOTPHandler)
 	
 	// Admin Login Route
 	mux.HandleFunc("POST /api/admin/login", adminhandlers.AdminLoginHandler)
