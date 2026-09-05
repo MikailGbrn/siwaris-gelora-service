@@ -30,7 +30,7 @@ func TrackHandler(w http.ResponseWriter, r *http.Request) {
 	          file_sptjm, file_ktp_pewaris, file_ktp_ahli_waris, file_kematian_pewaris, file_kk_ahli_waris,
 	          file_akta_lahir_ahli_waris, file_ktp_saksi, file_kematian_ahli_waris_wafat_lebih_dulu,
 	          file_pendukung_lainnya, file_surat_nikah_pewaris, file_ktp_suami, file_ktp_istri,
-	          file_akta_cerai_pewaris, file_surat_kuasa, rejected_files, admin_notes, estimated_completion, created_at, updated_at 
+	          file_akta_cerai_pewaris, file_surat_kuasa, file_draft, rejected_files, admin_notes, estimated_completion, created_at, updated_at 
 	          FROM applications WHERE registration_number = ? AND applicant_nik = ?`
 
 	err := db.DB.QueryRow(db.Rebind(query), regNum, nik).Scan(
@@ -40,7 +40,7 @@ func TrackHandler(w http.ResponseWriter, r *http.Request) {
 		&app.FileSptjm, &app.FileKtpPewaris, &app.FileKtpAhliWaris, &app.FileKematianPewaris, &app.FileKkAhliWaris,
 		&app.FileAktaLahirAhliWaris, &app.FileKtpSaksi, &app.FileKematianAhliWarisWafatLebihDulu,
 		&app.FilePendukungLainnya, &app.FileSuratNikahPewaris, &app.FileKtpSuami, &app.FileKtpIstri,
-		&app.FileAktaCeraiPewaris, &app.FileSuratKuasa, &app.RejectedFiles, &app.AdminNotes, &app.EstimatedCompletion, &app.CreatedAt, &app.UpdatedAt,
+		&app.FileAktaCeraiPewaris, &app.FileSuratKuasa, &app.FileDraft, &app.RejectedFiles, &app.AdminNotes, &app.EstimatedCompletion, &app.CreatedAt, &app.UpdatedAt,
 	)
 
 	if err == sql.ErrNoRows {
