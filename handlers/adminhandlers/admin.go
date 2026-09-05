@@ -204,7 +204,7 @@ func AdminUpdateStatusHandler(w http.ResponseWriter, r *http.Request) {
 	// Send email notification
 	if draftBase64 != "" {
 		go email.SendStatusUpdateWithAttachmentEmail(app.ApplicantEmail, app.ApplicantName, app.RegistrationNumber, req.Status, req.AdminNotes, draftFilename, draftBase64)
-	} else if app.Status != req.Status {
+	} else {
 		go email.SendStatusUpdateEmail(app.ApplicantEmail, app.ApplicantName, app.RegistrationNumber, req.Status, req.AdminNotes)
 	}
 
