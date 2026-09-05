@@ -44,6 +44,7 @@ type Application struct {
 	FileKtpIstri                          string    `json:"file_ktp_istri"`
 	FileAktaCeraiPewaris                  string    `json:"file_akta_cerai_pewaris"`
 	FileSuratKuasa                        string    `json:"file_surat_kuasa"`
+	FileDraft                             string    `json:"file_draft"`
 	RejectedFiles                         string    `json:"rejected_files"` // JSON array string of rejected keys e.g. ["file_ktp_ahli_waris"]
 	AdminNotes                            string    `json:"admin_notes"`
 	EstimatedCompletion                   string    `json:"estimated_completion"`
@@ -206,18 +207,21 @@ func createTable() {
 		log.Fatal("Error executing applications migration: ", err)
 	}
 
-	// Alter table to add file_surat_kuasa if it doesn't exist yet (for backward compatibility)
+	// Alter table to add columns if they don't exist yet (for backward compatibility)
 	if DbType == "postgres" {
 		_, _ = DB.Exec("ALTER TABLE applications ADD COLUMN IF NOT EXISTS file_surat_kuasa TEXT DEFAULT '';")
 		_, _ = DB.Exec("ALTER TABLE applications ADD COLUMN IF NOT EXISTS file_kematian_pewaris TEXT DEFAULT '';")
+		_, _ = DB.Exec("ALTER TABLE applications ADD COLUMN IF NOT EXISTS file_draft TEXT DEFAULT '';")
 	} else {
 		_, _ = DB.Exec("ALTER TABLE applications ADD COLUMN file_surat_kuasa TEXT DEFAULT '';")
 		_, _ = DB.Exec("ALTER TABLE applications ADD COLUMN file_kematian_pewaris TEXT DEFAULT '';")
+		_, _ = DB.Exec("ALTER TABLE applications ADD COLUMN file_draft TEXT DEFAULT '';")
 	}
 
 	// Update existing NULL values to empty strings to prevent Go SQL scan errors
 	_, _ = DB.Exec(Rebind("UPDATE applications SET file_surat_kuasa = '' WHERE file_surat_kuasa IS NULL"))
 	_, _ = DB.Exec(Rebind("UPDATE applications SET file_kematian_pewaris = '' WHERE file_kematian_pewaris IS NULL"))
+	_, _ = DB.Exec(Rebind("UPDATE applications SET file_draft = '' WHERE file_draft IS NULL"))
 
 	// Migrate Admins Table
 	_, err = DB.Exec(createAdminsSQL)

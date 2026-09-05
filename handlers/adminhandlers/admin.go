@@ -1,10 +1,16 @@
 package adminhandlers
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"siwaris-gelora-service/db"
@@ -110,7 +116,7 @@ func AdminGetApplicationHandler(w http.ResponseWriter, r *http.Request) {
 
 // AdminUpdateStatusHandler updates status, estimated completion, and notes for an application
 func AdminUpdateStatusHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPut {
+	if r.Method != http.MethodPut && r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
@@ -123,16 +129,50 @@ func AdminUpdateStatusHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var req StatusUpdateRequest
-	err = json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
-		http.Error(w, "Payload tidak valid", http.StatusBadRequest)
-		return
+	var draftFilename string
+	var draftBase64 string
+	var draftSavedPath string
+
+	contentType := r.Header.Get("Content-Type")
+	if strings.Contains(contentType, "multipart/form-data") {
+		err = r.ParseMultipartForm(10 << 20)
+		if err != nil {
+			http.Error(w, "Gagal memproses form", http.StatusBadRequest)
+			return
+		}
+
+		req.Status = r.FormValue("status")
+		req.AdminNotes = r.FormValue("admin_notes")
+		req.EstimatedCompletion = r.FormValue("estimated_completion")
+		req.RejectedFiles = r.FormValue("rejected_files")
+
+		file, header, err := r.FormFile("file_draft")
+		if err == nil {
+			defer file.Close()
+			os.MkdirAll("./uploads", os.ModePerm)
+			draftFilename = header.Filename
+			draftSavedPath = fmt.Sprintf("uploads/draft_%d_%s", time.Now().Unix(), header.Filename)
+
+			out, err := os.Create(draftSavedPath)
+			if err == nil {
+				defer out.Close()
+				buf := new(bytes.Buffer)
+				io.Copy(out, io.TeeReader(file, buf))
+				draftBase64 = base64.StdEncoding.EncodeToString(buf.Bytes())
+			}
+		}
+	} else {
+		err = json.NewDecoder(r.Body).Decode(&req)
+		if err != nil {
+			http.Error(w, "Payload tidak valid", http.StatusBadRequest)
+			return
+		}
 	}
 
 	// Fetch current details to trigger email correctly
 	var app db.Application
-	err = db.DB.QueryRow(db.Rebind("SELECT applicant_name, applicant_email, registration_number, status FROM applications WHERE id = ?"), id).
-		Scan(&app.ApplicantName, &app.ApplicantEmail, &app.RegistrationNumber, &app.Status)
+	err = db.DB.QueryRow(db.Rebind("SELECT applicant_name, applicant_email, registration_number, status, file_draft FROM applications WHERE id = ?"), id).
+		Scan(&app.ApplicantName, &app.ApplicantEmail, &app.RegistrationNumber, &app.Status, &app.FileDraft)
 	if err == sql.ErrNoRows {
 		http.Error(w, "Permohonan tidak ditemukan", http.StatusNotFound)
 		return
@@ -141,19 +181,30 @@ func AdminUpdateStatusHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Update DB (including rejected_files text column)
-	_, err = db.DB.Exec(db.Rebind(`
-		UPDATE applications 
-		SET status = ?, admin_notes = ?, estimated_completion = ?, rejected_files = ?, updated_at = ?
-		WHERE id = ?
-	`), req.Status, req.AdminNotes, req.EstimatedCompletion, req.RejectedFiles, time.Now(), id)
+	// Update DB (including rejected_files text column and file_draft if uploaded)
+	if draftSavedPath != "" {
+		_, err = db.DB.Exec(db.Rebind(`
+			UPDATE applications 
+			SET status = ?, admin_notes = ?, estimated_completion = ?, rejected_files = ?, file_draft = ?, updated_at = ?
+			WHERE id = ?
+		`), req.Status, req.AdminNotes, req.EstimatedCompletion, req.RejectedFiles, draftSavedPath, time.Now(), id)
+	} else {
+		_, err = db.DB.Exec(db.Rebind(`
+			UPDATE applications 
+			SET status = ?, admin_notes = ?, estimated_completion = ?, rejected_files = ?, updated_at = ?
+			WHERE id = ?
+		`), req.Status, req.AdminNotes, req.EstimatedCompletion, req.RejectedFiles, time.Now(), id)
+	}
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// If status changed, send email notification
-	if app.Status != req.Status {
+	// Send email notification
+	if draftBase64 != "" {
+		go email.SendStatusUpdateWithAttachmentEmail(app.ApplicantEmail, app.ApplicantName, app.RegistrationNumber, req.Status, req.AdminNotes, draftFilename, draftBase64)
+	} else if app.Status != req.Status {
 		go email.SendStatusUpdateEmail(app.ApplicantEmail, app.ApplicantName, app.RegistrationNumber, req.Status, req.AdminNotes)
 	}
 
