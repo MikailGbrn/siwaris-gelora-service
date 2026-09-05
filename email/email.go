@@ -12,11 +12,17 @@ import (
 	"time"
 )
 
+type Attachment struct {
+	Filename string `json:"filename"`
+	Content  string `json:"content"`
+}
+
 type ResendPayload struct {
-	From    string   `json:"from"`
-	To      []string `json:"to"`
-	Subject string   `json:"subject"`
-	HTML    string   `json:"html"`
+	From        string       `json:"from"`
+	To          []string     `json:"to"`
+	Subject     string       `json:"subject"`
+	HTML        string       `json:"html"`
+	Attachments []Attachment `json:"attachments,omitempty"`
 }
 
 func sendEmail(to string, subject string, htmlContent string, isAdmin bool) error {
@@ -78,6 +84,65 @@ func sendEmail(to string, subject string, htmlContent string, isAdmin bool) erro
 	}
 
 	log.Printf("Email successfully sent via Resend API to: %s\n", to)
+	return nil
+}
+
+func sendEmailWithAttachment(to string, subject string, htmlContent string, attachments []Attachment, isAdmin bool) error {
+	apiKey := ""
+	if isAdmin {
+		apiKey = os.Getenv("RESEND_API_KEY_ADMIN")
+	} else {
+		apiKey = os.Getenv("RESEND_API_KEY_APPLICANT")
+	}
+
+	if apiKey == "" {
+		apiKey = os.Getenv("RESEND_API_KEY")
+	}
+
+	if apiKey == "" {
+		log.Println("WARNING: RESEND_API_KEY environment variable is not set. Falling back to mock logging.")
+		return fmt.Errorf("RESEND_API_KEY not set")
+	}
+
+	payload := ResendPayload{
+		From:        "SIWARIS Gelora <no-reply@siwarisgelora.com>",
+		To:          []string{to},
+		Subject:     subject,
+		HTML:        htmlContent,
+		Attachments: attachments,
+	}
+
+	jsonBytes, err := json.Marshal(payload)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("POST", "https://api.resend.com/emails", bytes.NewBuffer(jsonBytes))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{
+		Timeout: 20 * time.Second,
+	}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Printf("ERROR: Resend API request failed: %v\n", err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		errMsg := string(bodyBytes)
+		log.Printf("ERROR: Resend API returned status %s: %s\n", resp.Status, errMsg)
+		return fmt.Errorf("failed to send email: status %s, response: %s", resp.Status, errMsg)
+	}
+
+	log.Printf("Email with attachment successfully sent via Resend API to: %s\n", to)
 	return nil
 }
 
@@ -266,10 +331,13 @@ func SendStatusUpdateEmail(to string, name string, regNum string, status string,
 	case "Sedang Diproses":
 		statusColor = "#1d4ed8" // Blue
 		statusDesc = "Draf surat pernyataan ahli waris Anda sedang diproses dan disusun oleh kelurahan."
+	case "Draft Sudah Terbuat":
+		statusColor = "#0284c7" // Blue / Sky
+		statusDesc = "Draft Surat Pernyataan Ahli Waris Anda telah selesai dibuat oleh petugas dan dikirimkan ke email Anda."
 	case "Menunggu TTD":
 		statusColor = "#7c3aed" // Purple
 		statusDesc = "Draf surat selesai dibuat dan saat ini sedang menunggu tanda tangan dari Lurah."
-	case "Selesai":
+	case "Selesai", "Disetujui":
 		statusColor = "#22c55e" // Green
 		statusDesc = "Selamat! Surat Pernyataan Ahli Waris Anda telah selesai diterbitkan dan siap diambil."
 	}
@@ -329,6 +397,82 @@ func SendStatusUpdateEmail(to string, name string, regNum string, status string,
 	err := sendEmail(to, subject, htmlContent, false)
 	if err != nil {
 		log.Printf("\n--- [FALLBACK MOCK EMAIL SENT] ---\nTo: %s\nSubject: %s\nBody:\nHalo %s, status permohonan %s diubah menjadi: %s. Catatan: %s\n-------------------------\n", to, subject, name, regNum, status, notes)
+	}
+}
+
+// SendStatusUpdateWithAttachmentEmail sends status change notification email with file attachment
+func SendStatusUpdateWithAttachmentEmail(to string, name string, regNum string, status string, notes string, filename string, fileBase64 string) {
+	subject := fmt.Sprintf("[SIWARIS GELORA] Status Baru: %s - %s", status, regNum)
+
+	statusColor := "#0284c7" // Sky Blue
+	statusDesc := "Draft Surat Pernyataan Ahli Waris Anda telah selesai dibuat oleh Petugas Kelurahan. Berkas draft terlampir langsung pada email ini untuk Anda periksa."
+
+	htmlContent := fmt.Sprintf(`
+	<!DOCTYPE html>
+	<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Pembaruan Status Permohonan</title>
+		<style>
+			body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333333; margin: 0; padding: 0; background-color: #f4f7f6; }
+			.container { max-width: 600px; margin: 20px auto; padding: 30px; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+			.header { text-align: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 25px; }
+			.header h1 { color: #0284c7; margin: 0; font-size: 24px; }
+			.content { font-size: 16px; }
+			.status-box { background-color: #fafafa; border: 1px solid #e2e8f0; border-radius: 6px; padding: 20px; margin: 20px 0; }
+			.status-badge { display: inline-block; padding: 6px 16px; font-weight: bold; color: #ffffff; border-radius: 20px; font-size: 14px; text-transform: uppercase; margin-bottom: 10px; }
+			.notes-box { background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 4px; margin-top: 15px; font-style: italic; }
+			.attachment-box { background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; border-radius: 6px; margin-top: 15px; color: #166534; font-weight: 500; }
+			.footer { text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 20px; margin-top: 30px; }
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<div class="header">
+				<h1>SIWARIS GELORA</h1>
+				<p style="margin: 5px 0 0 0; color: #64748b; font-size: 14px;">Kelurahan Gelora - Tanah Abang, Jakarta Pusat</p>
+			</div>
+			<div class="content">
+				<p>Halo <strong>%s</strong>,</p>
+				<p>Status permohonan Surat Pernyataan Ahli Waris Anda dengan nomor registrasi <strong>%s</strong> telah diperbarui.</p>
+				
+				<div class="status-box">
+					<div class="status-badge" style="background-color: %s;">%s</div>
+					<div style="font-size: 14px; color: #475569;">%s</div>
+					%s
+				</div>
+
+				<div class="attachment-box">
+					📎 <strong>Lampiran Berkas Draft:</strong> <em>%s</em>
+					<br><span style="font-size: 13px; font-weight: normal;">Berkas draft telah dilampirkan langsung pada email ini. Silakan unduh dan periksa draf berkas tersebut.</span>
+				</div>
+
+				<p>Anda juga dapat memantau status permohonan melalui portal SIWARIS Gelora pada menu <strong>Cek Status</strong>.</p>
+			</div>
+			<div class="footer">
+				<p>&copy; 2026 Pemerintah Provinsi DKI Jakarta | Kelurahan Gelora</p>
+				<p>Email ini dikirimkan secara otomatis oleh sistem pelayanan digital SIWARIS GELORA.</p>
+			</div>
+		</div>
+	</body>
+	</html>
+	`, name, regNum, statusColor, status, statusDesc, func() string {
+		if notes != "" {
+			return fmt.Sprintf(`<div class="notes-box"><strong>Catatan Petugas:</strong> "%s"</div>`, notes)
+		}
+		return ""
+	}(), filename)
+
+	attachments := []Attachment{
+		{
+			Filename: filename,
+			Content:  fileBase64,
+		},
+	}
+
+	err := sendEmailWithAttachment(to, subject, htmlContent, attachments, false)
+	if err != nil {
+		log.Printf("\n--- [FALLBACK MOCK EMAIL WITH ATTACHMENT SENT] ---\nTo: %s\nSubject: %s\nAttachment: %s\n-------------------------\n", to, subject, filename)
 	}
 }
 
