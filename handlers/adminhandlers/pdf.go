@@ -8,8 +8,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/jung-kurt/gofpdf/v2"
 	"siwaris-gelora-service/db"
+
+	"github.com/jung-kurt/gofpdf/v2"
 )
 
 // GenerateApplicationPDF creates a PDF dossier for the application and writes it to w
@@ -17,13 +18,15 @@ func GenerateApplicationPDF(w io.Writer, app *db.Application) error {
 	pdf := gofpdf.New("P", "mm", "A4", "")
 	pdf.AddPage()
 
+	// changes orang lain
+
 	// Header / Kop Surat
 	pdf.SetFont("Arial", "B", 14)
 	pdf.CellFormat(0, 7, "PEMERINTAH PROVINSI DKI JAKARTA", "", 1, "C", false, 0, "")
 	pdf.CellFormat(0, 7, "KECAMATAN TANAH ABANG - KELURAHAN GELORA", "", 1, "C", false, 0, "")
 	pdf.SetFont("Arial", "", 10)
 	pdf.CellFormat(0, 5, "Jl. Gelora No.1, Jakarta Pusat", "", 1, "C", false, 0, "")
-	
+
 	// Divider Line
 	pdf.SetLineWidth(0.8)
 	pdf.Line(10, 32, 200, 32)
@@ -40,7 +43,7 @@ func GenerateApplicationPDF(w io.Writer, app *db.Application) error {
 	pdf.SetFont("Arial", "B", 11)
 	pdf.CellFormat(0, 6, "I. DATA PEMOHON", "", 1, "L", false, 0, "")
 	pdf.SetFont("Arial", "", 10)
-	
+
 	writeField(pdf, "Nama Lengkap", app.ApplicantName)
 	writeField(pdf, "NIK", app.ApplicantNik)
 	writeField(pdf, "Nomor KK", app.ApplicantKk)
@@ -53,7 +56,7 @@ func GenerateApplicationPDF(w io.Writer, app *db.Application) error {
 	pdf.SetFont("Arial", "B", 11)
 	pdf.CellFormat(0, 6, "II. DATA PEWARIS", "", 1, "L", false, 0, "")
 	pdf.SetFont("Arial", "", 10)
-	
+
 	writeField(pdf, "Nama Pewaris (Almarhum/ah)", app.HeirName)
 	writeField(pdf, "Tanggal Meninggal", app.DeathDate)
 	writeField(pdf, "Hubungan Keluarga", app.Relationship)
@@ -77,22 +80,22 @@ func GenerateApplicationPDF(w io.Writer, app *db.Application) error {
 	leftCol := 60.0
 	rightCol := 60.0
 	spacing := 20.0
-	
+
 	currentY := pdf.GetY()
-	
+
 	pdf.SetXY(15, currentY)
 	pdf.CellFormat(leftCol, 5, "Pemohon,", "", 0, "C", false, 0, "")
-	
+
 	pdf.SetXY(135, currentY)
 	pdf.CellFormat(rightCol, 5, "Lurah Kelurahan Gelora,", "", 1, "C", false, 0, "")
-	
+
 	pdf.Ln(spacing)
 	currentY = pdf.GetY()
-	
+
 	pdf.SetXY(15, currentY)
 	pdf.SetFont("Arial", "U", 10)
 	pdf.CellFormat(leftCol, 5, app.ApplicantName, "", 0, "C", false, 0, "")
-	
+
 	pdf.SetXY(135, currentY)
 	pdf.SetFont("Arial", "U", 10)
 	pdf.CellFormat(rightCol, 5, ".........................................", "", 1, "C", false, 0, "")
