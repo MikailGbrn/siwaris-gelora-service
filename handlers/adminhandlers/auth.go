@@ -21,6 +21,8 @@ type LoginResponse struct {
 	Token string `json:"token"`
 }
 
+//asdasdasd
+
 // AdminLoginHandler verifies admin credentials against database and returns a JWT token
 func AdminLoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
